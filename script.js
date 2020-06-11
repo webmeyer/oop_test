@@ -1,0 +1,87 @@
+function Container() {
+    this.id = '';
+    this.className = '';
+    this.htmlCode = '';
+}
+
+Container.prototype.render = function () {
+    return this.htmlCode;
+};
+
+Container.prototype.remove = function () {
+    var elem = document.getElementById(this.id);
+    elem.parentNode.removeChild(elem);
+}
+
+function Menu(myId, myClass, myItems) {
+    Container.call(this);
+    this.id = myId;
+    this.className = myClass;
+    this.items = myItems;
+}
+
+Menu.prototype = Object.create(Container.prototype);
+Menu.prototype.constructor = Menu;
+
+Menu.prototype.render = function () {
+    var res = '<ul class="'+this.className+'">';
+
+    for (var item in this.items)
+    {
+        if(this.items[item] instanceof MenuItem){
+            res += this.items[item].render();
+        }
+        else if (this.items[item] instanceof MenuSubItem) {
+            res += '<li>';
+            res += this.items[item].render();
+            res += '</li>';
+        }
+    }
+    res += '</ul>';
+    return res;
+};
+
+function MenuItem(myHref, myName) {
+    Container.call(this);
+    this.className = 'menu-item';
+    this.href = myHref;
+    this.name = myName;
+}
+
+MenuItem.prototype = Object.create(Container.prototype);
+MenuItem.prototype.constructor = MenuItem;
+
+MenuItem.prototype.render = function () {
+    return '<li><a href="'+this.href+'">'+this.name+'</a></li>';
+};
+
+function MenuSubItem(myId, myClass, myItems) {
+    Menu.call(this);
+    this.id = myId;
+    this.className = myClass;
+    this.items = myItems;
+}
+
+MenuSubItem.prototype = Object.create(Menu.prototype);
+MenuSubItem.prototype.constructor = MenuSubItem;
+
+var menu = new Menu('my_menu', 'my_menu', [
+    new MenuItem('/', 'Главная'),
+    new MenuItem('/about/', 'О нас'),
+    new MenuItem('/contacts', 'Контакты'),
+    new MenuSubItem('aaa', 'bbb', [
+        new MenuItem('/sub1', 'Sub1'),
+        new MenuItem('/sub2', 'Sub2'),
+    ]),
+])
+
+window.onload = function () {
+    var nav = document.querySelector('nav');
+    document.getElementById('render').addEventListener('click', function () {
+        nav.innerHTML = menu.render();
+    });
+
+    document.getElementById('remove').addEventListener('click', function () {
+        menu.remove();
+    });
+}
